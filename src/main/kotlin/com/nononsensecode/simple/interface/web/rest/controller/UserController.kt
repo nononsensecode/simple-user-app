@@ -1,16 +1,18 @@
 package com.nononsensecode.simple.`interface`.web.rest.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.nononsensecode.simple.`interface`.web.dto.PasswordDTO
 import com.nononsensecode.simple.`interface`.web.dto.UserDTO
 import com.nononsensecode.simple.`interface`.web.exception.UserNotFoundException
 import com.nononsensecode.simple.domain.model.IUserRepository
 import com.nononsensecode.simple.spring.data.commons.OffsetBasedPageRequest
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.nio.charset.StandardCharsets
 import java.time.ZoneId
 import java.util.*
 
@@ -55,10 +57,10 @@ class UserController(
         return ResponseEntity(UserDTO(user, zoneId), HttpStatus.OK)
     }
 
-    @PostMapping("/username/{username}")
-    fun validateCredentials(@RequestBody password: String, @PathVariable("username") username: String): ResponseEntity<Boolean> {
+    @PostMapping("/username/{username}", consumes = [MediaType.APPLICATION_JSON_VALUE])
+    fun validateCredentials(@RequestBody password: PasswordDTO, @PathVariable("username") username: String): ResponseEntity<Boolean> {
         val user = userRepository.findUserByUsername(username) ?: throw UserNotFoundException("User with username $username not found")
-        val verified = BCrypt.verifyer().verify(password.toCharArray(), user.password).verified
+        val verified = BCrypt.verifyer().verify(password.password.toCharArray(), user.password).verified
         return ResponseEntity(verified, HttpStatus.OK)
     }
 
@@ -69,7 +71,7 @@ class UserController(
         return ResponseEntity(count, HttpStatus.OK)
     }
 
-    @GetMapping
+    @GetMapping("/paged")
     fun getsPagedUsers(@RequestParam("start") start: Int,
                        @RequestParam("maxResults") maxResults: Int): ResponseEntity<List<UserDTO>> {
         logger.info { "Get users request in a pageable manner" }
@@ -78,7 +80,7 @@ class UserController(
         return ResponseEntity(users.content.map { UserDTO(it, zoneId) }, HttpStatus.OK)
     }
 
-    @GetMapping("/search/{searchString}")
+    @GetMapping("/search/{searchString}/paged")
     fun getPagedUsersBySearchString(@PathVariable("searchString") searchString: String,
                  @RequestParam("start") start: Int,
                  @RequestParam("maxResults") maxResults: Int): ResponseEntity<List<UserDTO>> {
