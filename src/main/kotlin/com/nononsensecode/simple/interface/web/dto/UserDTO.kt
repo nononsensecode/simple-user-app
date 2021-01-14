@@ -13,7 +13,8 @@ data class UserDTO(
     val lastName: String,
     val email: String,
     val enabled: Boolean,
-    val emailVerified: Boolean
+    val emailVerified: Boolean,
+    val roles: Set<RoleDTO>
 ) {
     constructor(user: User, zoneId: ZoneId): this(
         id = user.id!!,
@@ -23,6 +24,7 @@ data class UserDTO(
         lastName = user.lastName,
         email = user.email,
         enabled = user.isEnabled,
-        emailVerified = user.isEmailVerified
+        emailVerified = user.isEmailVerified,
+        roles = user.roles.map { RoleDTO(it.id, it.name, it.client.name) }.toSet()
     )
 }

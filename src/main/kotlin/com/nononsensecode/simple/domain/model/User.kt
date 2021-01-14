@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.OneToMany
 
 @Entity
 class User(
@@ -24,5 +25,8 @@ class User(
 
     val isEmailVerified: Boolean,
 
-    val password: String
+    val password: String,
+
+    @OneToMany
+    val roles: Set<Role> = mutableSetOf()
 )
